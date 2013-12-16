@@ -3,7 +3,6 @@
 import urllib
 import urllib2
 import json
-import logging
 
 import webapp2
 import jsontemplate
@@ -37,11 +36,8 @@ SEARCH_TEMPLATE = """
         <td><i>{title}</i></td>
         <td>{publisher}</td>
         <td>{recipe_id}</td>
-        <!--<td><a href="/ingredients/{recipe_id|htmltag}">Add ingredients to
-        shopping list</a>-->
-        <td><form action="/ingredients" method="post">
-        <input type="hidden" name="r_id" value={recipe_id}>
-        <input type="submit" value="Add to Shopping List">
+        <td><a href="/ingredients/?recipe_id={recipe_id}">Add ingredients to
+        shopping list</a>
         </td>
         </tr>
     {.end}
@@ -55,6 +51,13 @@ SEARCH_TEMPLATE = """
 
 GET_TEMPLATE = """
 <html>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type=text/javascript>
+function add_to_shopping_list() {
+    $('#hiddenfield')[0].value = JSON.stringify($('#mydiv')[0].data-json);
+    $('#myform').submit();
+}
+</script>
 <body>
 {.section recipe}
   <h2>{title}</h2>
@@ -67,6 +70,11 @@ GET_TEMPLATE = """
     </tr>
   {.end}
   </table>
+    <form id="myform" action="/shoppinglist" method="post">
+        <input type="button" value="Add to Shopping List" onclick="add_to_shopping_list()">
+        <input id="hiddenfield" type="hidden" name="ingredients">
+    </form>
+  <div id="mydiv" style="visibility:hidden" data-json="{ingredients}">TEST</div>
   {.end}
 {.or}
   <p><em>(No page content matches)</em></p>
@@ -74,6 +82,16 @@ GET_TEMPLATE = """
   </body>
 </html>
 """
+
+
+class F2FMixin(object):
+
+    def render_template(self, data, url, template):
+        encoded_data = urllib.urlencode(data)
+        response = urllib2.urlopen(url, encoded_data)
+        json_response = json.loads(response.read())
+        self.response.write(
+            jsontemplate.expand(template, json_response))
 
 
 class MainPage(webapp2.RequestHandler):
@@ -84,35 +102,36 @@ class MainPage(webapp2.RequestHandler):
         self.response.write(MAIN_PAGE_HTML)
 
 
-class Search(webapp2.RequestHandler):
+class Search(webapp2.RequestHandler, F2FMixin):
     """Application main page, with upload form."""
 
     def post(self):
         """POST method handler."""
         content = self.request.get('content')
         data = {'key': API_KEY, 'q': content}
-        encoded_data = urllib.urlencode(data)
-        response = urllib2.urlopen(F2F_SEARCH_URL, encoded_data)
-        json_response = json.loads(response.read())
-        self.response.write(
-            jsontemplate.expand(SEARCH_TEMPLATE, json_response))
+        self.render_template(data, F2F_SEARCH_URL, SEARCH_TEMPLATE)
 
 
-class Ingredients(webapp2.RequestHandler):
-    ingredients = []
+class Ingredients(webapp2.RequestHandler, F2FMixin):
+
+    def get(self):
+        """GET method handler."""
+        recipe_id = self.request.get('recipe_id')
+        data = {'key': API_KEY, 'rId': recipe_id}
+        self.render_template(data, F2F_GET_URL, GET_TEMPLATE)
+
+
+class ShoppingList(webapp2.RequestHandler, F2FMixin):
+    """Docstring for ShoppingList """
+    Ingredients = []
 
     def post(self):
-        """POST method handler."""
-        recipe_id = self.request.get('r_id')
+        ingredients = self.request.get('ingredients')
         import pdb; pdb.set_trace()
-        data = {'key': API_KEY, 'rId': recipe_id}
-        encoded_data = urllib.urlencode(data)
-        response = urllib2.urlopen(F2F_GET_URL, encoded_data)
-        json_response = json.loads(response.read())
-        logging.info(recipe_id)
-        self.response.write(
-            jsontemplate.expand(SEARCH_TEMPLATE, json_response))
+        ShoppingList.Ingredients.extend(ingredients)
+        self.response.write(ShoppingList.Ingredients)
+
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage), ('/search', Search), ('/ingredients', Ingredients)],
-    debug=True)
+    ('/', MainPage), ('/search', Search), ('/ingredients/', Ingredients),
+    ('/shoppinglist', ShoppingList)], debug=True)
