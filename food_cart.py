@@ -8,7 +8,7 @@ import logging
 import webapp2
 import jsontemplate
 
-API_KEY = 'e97d80f9817b9ae6f292aaa3e068cd98'
+API_KEY = 'secret'
 F2F_SEARCH_URL = 'http://food2fork.com/api/search'
 F2F_GET_URL = 'http://food2fork.com/api/get'
 
