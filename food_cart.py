@@ -51,13 +51,6 @@ SEARCH_TEMPLATE = """
 
 GET_TEMPLATE = """
 <html>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script type=text/javascript>
-function add_to_shopping_list() {
-    $('#hiddenfield')[0].value = JSON.stringify($('#mydiv')[0].data-json);
-    $('#myform').submit();
-}
-</script>
 <body>
 {.section recipe}
   <h2>{title}</h2>
@@ -70,12 +63,11 @@ function add_to_shopping_list() {
     </tr>
   {.end}
   </table>
-    <form id="myform" action="/shoppinglist" method="post">
-        <input type="button" value="Add to Shopping List" onclick="add_to_shopping_list()">
-        <input id="hiddenfield" type="hidden" name="ingredients">
-    </form>
-  <div id="mydiv" style="visibility:hidden" data-json="{ingredients}">TEST</div>
   {.end}
+    <form action="/shoppinglist" method="post">
+        <input type="submit" value="Add to Shopping List" >
+        <input type="hidden" name="recipe_id" value="{recipe_id}" >
+    </form>
 {.or}
   <p><em>(No page content matches)</em></p>
 {.end}
@@ -86,10 +78,19 @@ function add_to_shopping_list() {
 
 class F2FMixin(object):
 
-    def render_template(self, data, url, template):
+    def get_json_response(self, data, url):
+        """@todo: Docstring for get_json_response
+
+        :url: @todo
+        :returns: @todo
+
+        """
         encoded_data = urllib.urlencode(data)
         response = urllib2.urlopen(url, encoded_data)
         json_response = json.loads(response.read())
+        return json_response
+
+    def render_template(self, json_response, template):
         self.response.write(
             jsontemplate.expand(template, json_response))
 
@@ -109,16 +110,21 @@ class Search(webapp2.RequestHandler, F2FMixin):
         """POST method handler."""
         content = self.request.get('content')
         data = {'key': API_KEY, 'q': content}
-        self.render_template(data, F2F_SEARCH_URL, SEARCH_TEMPLATE)
+        json_response = self.get_json_response(data, F2F_SEARCH_URL)
+        self.render_template(json_response, SEARCH_TEMPLATE)
 
 
 class Ingredients(webapp2.RequestHandler, F2FMixin):
+    RecipeDict = {}
 
     def get(self):
         """GET method handler."""
         recipe_id = self.request.get('recipe_id')
         data = {'key': API_KEY, 'rId': recipe_id}
-        self.render_template(data, F2F_GET_URL, GET_TEMPLATE)
+        json_response = self.get_json_response(data, F2F_GET_URL)
+        ingredients = json_response['recipe']['ingredients']
+        Ingredients.RecipeDict[recipe_id] = ingredients
+        self.render_template(json_response, GET_TEMPLATE)
 
 
 class ShoppingList(webapp2.RequestHandler, F2FMixin):
@@ -126,8 +132,8 @@ class ShoppingList(webapp2.RequestHandler, F2FMixin):
     Ingredients = []
 
     def post(self):
-        ingredients = self.request.get('ingredients')
-        import pdb; pdb.set_trace()
+        recipe_id = self.request.get('recipe_id')
+        ingredients = Ingredients.RecipeDict[recipe_id]
         ShoppingList.Ingredients.extend(ingredients)
         self.response.write(ShoppingList.Ingredients)
 
