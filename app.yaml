@@ -5,8 +5,11 @@ api_version: 1
 threadsafe: no
 
 handlers:
-- url: /img
-  static_dir: img
+- url: /bower_components
+  static_dir: bower_components
+
+- url: /static
+  static_dir: static
 
 - url: /.*
   script: food_cart.app
