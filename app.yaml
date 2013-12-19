@@ -13,3 +13,7 @@ handlers:
 
 - url: /.*
   script: food_cart.app
+
+libraries:
+- name: webapp2
+  version: latest
