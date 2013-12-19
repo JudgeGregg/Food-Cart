@@ -197,17 +197,16 @@ class Search(SessionHandler, F2FMixin):
 
 
 class Ingredients(SessionHandler, F2FMixin):
-    RecipeDict = {}
 
     def get(self):
         """GET method handler."""
         recipe_id = self.request.get('recipe_id')
-        data = {'key': API_KEY, 'rId': recipe_id}
-        json_response = self.get_json_response(data, F2F_GET_URL)
-        ingredients = json_response['recipe']['ingredients']
-        self.session['recipes'][recipe_id] = ingredients
-        self.session['kikoo'] = 'lol'
-        self.render_template(json_response, GET_TEMPLATE)
+        app = webapp2.get_app()
+        if not app.registry.get(recipe_id):
+            data = {'key': API_KEY, 'rId': recipe_id}
+            json_response = self.get_json_response(data, F2F_GET_URL)
+            app.registry[recipe_id] = json_response
+        self.render_template(app.registry[recipe_id], GET_TEMPLATE)
 
 
 class ShoppingList(SessionHandler, F2FMixin):
