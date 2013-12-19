@@ -177,14 +177,15 @@ class Search(SessionHandler, F2FMixin):
 
     def post(self):
         """POST method handler."""
-        content = self.request.get('content')
+        search = self.request.get('search')
         name = self.request.get('name')
-        self.session['name'] = name
-        if not self.session.get('recipes'):
-            self.session['recipes'] = {}
-        if not self.session.get('shoppinglist'):
-            self.session['shoppinglist'] = []
-        data = {'key': API_KEY, 'q': content}
+        if not self.session.get('name'):
+            self.session['name'] = name
+        self.redirect('/search?' + search)
+
+    def get(self):
+        search = self.request.get('search')
+        data = {'key': API_KEY, 'q': search}
         json_response = self.get_json_response(data, F2F_SEARCH_URL)
         self.render_template(json_response, SEARCH_TEMPLATE)
 
