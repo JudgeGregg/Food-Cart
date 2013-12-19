@@ -209,19 +209,20 @@ class Ingredients(SessionHandler, F2FMixin):
         self.render_template(app.registry[recipe_id], GET_TEMPLATE)
 
 
-class ShoppingList(SessionHandler, F2FMixin):
+class ShoppingList(SessionHandler):
     """Docstring for ShoppingList """
-    ShoppingList = {}
 
     def post(self):
-        recipe_id = self.request.get('recipe_id')
-        self.session['shoppinglist'].extend(self.session['recipes'][recipe_id])
-        self.response.write(unicode(self.session['shoppinglist']))
+        if not self.session.get('name'):
+            self.redirect('/')
+            return
+        self.response.write('Welcome ' + self.session['name'])
 
     def get(self):
-        recipe_id = self.request.get('recipe_id')
-        self.session['shoppinglist'].extend(self.session['recipes'][recipe_id])
-        self.response.write(unicode(self.session['shoppinglist']))
+        if not self.session.get('name'):
+            self.redirect('/')
+            return
+        self.response.write('Welcome ' + self.session['name'])
 
 config = {}
 config['webapp2_extras.sessions'] = {
