@@ -31,7 +31,7 @@ MAIN_PAGE_TEMPLATE = """
     <form class="form-signin" action="/search" method="post">
       <h2 class="form-signin-heading">Search Food</h2>
       <input type="text" name="name" class="form-control" placeholder="Name" required autofocus>
-      <input type="text" name="content" class="form-control" placeholder="Recipe" required autofocus>
+      <input type="text" name="search" class="form-control" placeholder="Recipe" required autofocus>
       <br>
       <button class="btn btn-lg btn-primary btn-block" type="submit">Grab</button>
     </form>
@@ -65,8 +65,7 @@ SEARCH_TEMPLATE = """
         <td><a href="{source_url|htmltag}">Get to recipe</a>
         <td><i>{title}</i></td>
         <td>{publisher}</td>
-        <td><a href="/ingredients/?recipe_id={recipe_id}">Add ingredients to
-        shopping list</a>
+        <td><a href="/ingredients/?recipe_id={recipe_id}">View ingredients</a>
         </td>
         </tr>
     {.end}
@@ -103,14 +102,15 @@ GET_TEMPLATE = """
       <td><i>{@}</i></td>
     </tr>
   {.end}
-    <tr>
+    <!--<tr>
     <td><a href="/shoppinglist/?recipe_id={recipe_id}">Add ingredients to
     shopping list</a>
         </td>
-    </tr>
+    </tr>-->
   </table>
+  <br/>
   {.end}
-    <form action="/shoppinglist" method="post">
+    <form action="/shoppinglist/" method="post">
         <input type="submit" value="Add to Shopping List" >
         <input type="hidden" name="recipe_id" value="{recipe_id}" >
     </form>
