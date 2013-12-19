@@ -4,6 +4,7 @@ import urllib
 import urllib2
 import json
 
+from google.appengine.ext import ndb
 import webapp2
 from webapp2_extras import sessions
 import jsontemplate
@@ -164,9 +165,14 @@ class F2FMixin(object):
             jsontemplate.expand(template, json_response))
 
 
+class ShoppingList(ndb.Model):
+    """Models an individual Guestbook entry with author, content, and date."""
+    content = ndb.StringProperty(indexed=False)
+    date = ndb.DateTimeProperty(auto_now_add=True)
+
+
 class MainPage(SessionHandler):
     """Application main page, with upload form."""
-
     def get(self):
         """GET method handler."""
         self.response.write(MAIN_PAGE_TEMPLATE)
