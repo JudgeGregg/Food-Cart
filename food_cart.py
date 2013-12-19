@@ -130,7 +130,6 @@ class SessionHandler(webapp2.RequestHandler):
 
     def dispatch(self):
         # Get a session store for this request.
-        print 'retrieving'
         self.session_store = sessions.get_store(request=self.request)
 
         try:
@@ -138,8 +137,6 @@ class SessionHandler(webapp2.RequestHandler):
             webapp2.RequestHandler.dispatch(self)
         finally:
             # Save all sessions.
-            print 'storing'
-            print self.session
             self.session_store.save_sessions(self.response)
 
     @webapp2.cached_property
@@ -172,7 +169,6 @@ class MainPage(SessionHandler):
 
     def get(self):
         """GET method handler."""
-        print 'leaving main'
         self.response.write(MAIN_PAGE_TEMPLATE)
 
 
@@ -190,8 +186,6 @@ class Search(SessionHandler, F2FMixin):
             self.session['shoppinglist'] = []
         data = {'key': API_KEY, 'q': content}
         json_response = self.get_json_response(data, F2F_SEARCH_URL)
-        print self.session
-        print 'leaving search'
         self.render_template(json_response, SEARCH_TEMPLATE)
 
 
@@ -206,7 +200,6 @@ class Ingredients(SessionHandler, F2FMixin):
         ingredients = json_response['recipe']['ingredients']
         self.session['recipes'][recipe_id] = ingredients
         self.session['kikoo'] = 'lol'
-        print self.session
         self.render_template(json_response, GET_TEMPLATE)
 
 
