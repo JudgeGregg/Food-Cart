@@ -5,11 +5,8 @@ import urllib2
 import json
 
 import webapp2
-#import webapp2_extras.appengine.auth.models.Users as Users
 from webapp2_extras import sessions
-
 import jsontemplate
-#from webapp2_extras.appengine.users import login_required
 
 API_KEY = 'secret'
 F2F_SEARCH_URL = 'http://food2fork.com/api/search'
