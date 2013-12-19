@@ -8,7 +8,8 @@ import webapp2
 from webapp2_extras import sessions
 import jsontemplate
 
-API_KEY = 'secret'
+from keys import API_KEY, SECRET_KEY
+
 F2F_SEARCH_URL = 'http://food2fork.com/api/search'
 F2F_GET_URL = 'http://food2fork.com/api/get'
 
@@ -216,19 +217,16 @@ class ShoppingList(SessionHandler, F2FMixin):
     def post(self):
         recipe_id = self.request.get('recipe_id')
         self.session['shoppinglist'].extend(self.session['recipes'][recipe_id])
-        print self.session
         self.response.write(unicode(self.session['shoppinglist']))
 
     def get(self):
-        print self.session
         recipe_id = self.request.get('recipe_id')
         self.session['shoppinglist'].extend(self.session['recipes'][recipe_id])
         self.response.write(unicode(self.session['shoppinglist']))
 
 config = {}
 config['webapp2_extras.sessions'] = {
-    'secret_key': 'zomg-this-key-is-so-secret',
-    'cookie-args': {'max_age: 3600'},
+    'secret_key': SECRET_KEY,
 }
 
 app = webapp2.WSGIApplication([
